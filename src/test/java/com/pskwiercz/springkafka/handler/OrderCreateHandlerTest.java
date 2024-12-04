@@ -1,8 +1,12 @@
 package com.pskwiercz.springkafka.handler;
 
+import com.pskwiercz.springkafka.message.OrderCreated;
 import com.pskwiercz.springkafka.service.DispatchService;
+import com.pskwiercz.springkafka.util.TestEventData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -20,7 +24,8 @@ class OrderCreateHandlerTest {
 
     @Test
     void listen() {
-        handler.listen("payload");
-        verify(dispatchServiceMock, times(1)).process("payload");
+        OrderCreated event = TestEventData.buildOrderCreatedEvent(UUID.randomUUID(), UUID.randomUUID().toString());
+        handler.listen(event);
+        verify(dispatchServiceMock, times(1)).process(event);
     }
 }
