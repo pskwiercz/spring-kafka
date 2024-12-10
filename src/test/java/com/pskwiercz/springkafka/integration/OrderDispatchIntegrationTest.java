@@ -1,4 +1,4 @@
-package integration;
+package com.pskwiercz.springkafka.integration;
 
 import com.pskwiercz.springkafka.KafkaConfiguration;
 import com.pskwiercz.springkafka.message.DispatchPreparing;
@@ -24,6 +24,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -32,7 +33,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
 
 @Slf4j
-@SpringBootTest(classes = {KafkaConfiguration.class, OrderDispatchIntegrationTest.TestConfig.class})
+@SpringBootTest(classes = {KafkaConfiguration.class})
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @EmbeddedKafka(controlledShutdown = true)
@@ -91,7 +92,8 @@ public class OrderDispatchIntegrationTest
     @Test
     public void testOrderDispatchFlow() throws Exception {
         OrderCreated orderCreated = TestEventData.buildOrderCreatedEvent(randomUUID(), "my-item");
-        sendMessage(ORDER_CREATED_TOPIC, orderCreated);
+        String key = UUID.randomUUID().toString();
+        sendMessage(ORDER_CREATED_TOPIC, key, orderCreated);
 
         await().atMost(3, TimeUnit.SECONDS).pollDelay(100, TimeUnit.MILLISECONDS)
                 .until(testListener.dispatchPreparingCounter::get, equalTo(1));
@@ -99,9 +101,10 @@ public class OrderDispatchIntegrationTest
                 .until(testListener.orderDispatchedCounter::get, equalTo(1));
     }
 
-    private void sendMessage(String topic, Object data) throws Exception {
+    private void sendMessage(String topic, String key,  Object data) throws Exception {
         kafkaTemplate.send(MessageBuilder
                 .withPayload(data)
+                .setHeader(KafkaHeaders.KEY, key)
                 .setHeader(KafkaHeaders.TOPIC, topic)
                 .build()).get();
     }

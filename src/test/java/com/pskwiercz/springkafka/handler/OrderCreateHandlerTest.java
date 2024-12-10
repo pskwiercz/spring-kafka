@@ -24,18 +24,20 @@ class OrderCreateHandlerTest {
 
     @Test
     void listenSuccessTest() throws Exception {
+        String key = UUID.randomUUID().toString();
         OrderCreated event = TestEventData.buildOrderCreatedEvent(UUID.randomUUID(), UUID.randomUUID().toString());
-        handler.listen(event);
-        verify(dispatchServiceMock, times(1)).process(event);
+        handler.listen(0, key, event);
+        verify(dispatchServiceMock, times(1)).process(key, event);
     }
 
     @Test
     public void listenServiceThrowsExceptionTest() throws Exception {
+        String key = UUID.randomUUID().toString();
         OrderCreated testEvent = TestEventData.buildOrderCreatedEvent(randomUUID(), randomUUID().toString());
-        doThrow(new RuntimeException("Service failure")).when(dispatchServiceMock).process(testEvent);
+        doThrow(new RuntimeException("Service failure")).when(dispatchServiceMock).process(key, testEvent);
 
-        handler.listen(testEvent);
+        handler.listen(0, key, testEvent);
 
-        verify(dispatchServiceMock, times(1)).process(testEvent);
+        verify(dispatchServiceMock, times(1)).process(key, testEvent);
     }
 }
