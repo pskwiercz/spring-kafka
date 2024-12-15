@@ -85,7 +85,7 @@ public class OrderDispatchIntegrationTest
         testListener.orderDispatchedCounter.set(0);
 
         // Wait until the partitions are assigned.
-        registry.getListenerContainers().stream().forEach(container ->
+        registry.getListenerContainers().forEach(container ->
                 ContainerTestUtils.waitForAssignment(container, embeddedKafkaBroker.getPartitionsPerTopic()));
     }
 
